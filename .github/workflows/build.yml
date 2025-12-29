@@ -108,3 +108,28 @@ jobs:
         export ASEPRITE=$PWD/build/bin/aseprite
         cd tests
         $XVFB bash run-tests.sh
+    
+    # ========== 新增：打包 exe 文件（zip 压缩） ==========
+    - name: Package EXE (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        # 定义打包文件名（包含编译参数，便于区分）
+        package_name="aseprite-${{ matrix.build_type }}-${{ matrix.ui }}-${{ matrix.scripting }}-windows-x64.zip"
+        # 进入编译产物目录
+        cd build/bin
+        # 压缩 exe 及依赖文件（Windows 下用 7z 打包，GitHub Actions 自带 7z）
+        7z a "../../$package_name" ./*
+        # 验证打包文件是否存在
+        ls -la "../../$package_name"
+    
+    # ========== 新增：上传打包后的产物 ==========
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        # 产物名称（包含编译参数，便于区分不同构建版本）
+        name: aseprite-${{ matrix.build_type }}-${{ matrix.ui }}-${{ matrix.scripting }}
+        # 要上传的文件路径
+        path: ./aseprite-${{ matrix.build_type }}-${{ matrix.ui }}-${{ matrix.scripting }}-windows-x64.zip
+        # 产物保留时间（默认 90 天，可按需修改）
+        retention-days: 30
